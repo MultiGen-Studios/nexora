@@ -3,404 +3,1001 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Nexora - Messaging App by MultiGen Ai</title>
+<title>Nexora Messaging App Prototype</title>
 <style>
-  /* Reset & base */
+  /* Reset and base */
   * {
     box-sizing: border-box;
   }
   body {
-    margin:0; padding:0;
+    margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: #eee;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  #app {
-    width: 350px;
+    background-color: var(--bg);
+    color: var(--text);
     height: 600px;
-    background: #1e1e2f;
-    border-radius: 15px;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    overflow: hidden;
+    user-select: none;
   }
-  /* Header */
-  header {
-    background: linear-gradient(90deg, #4b6cb7, #182848);
-    color: #fff;
-    padding: 15px 20px;
-    font-size: 20px;
+  :root {
+    --primary: #007bff;
+    --primary-dark: #0056b3;
+    --secondary: #6c757d;
+    --bg: #f2f2f2;
+    --text: #222;
+    --chat-bg: white;
+    --input-bg: #eee;
+    --border-color: #ddd;
+    --online-green: #4CAF50;
+    --delivered-color: #47a6e5;
+    --read-color: #074e9a;
+    --accent-color: #007bff;
+    --emoji-hover: #e0eaff;
+    --shadow: rgba(0, 0, 0, 0.1);
+  }
+  .dark {
+    --primary: #339af0;
+    --primary-dark: #1c7ed6;
+    --secondary: #a5a5a5;
+    --bg: #121212;
+    --text: #ddd;
+    --chat-bg: #1e1e1e;
+    --input-bg: #2a2a2a;
+    --border-color: #333;
+    --online-green: #31c48d;
+    --delivered-color: #56baf0;
+    --read-color: #339af0;
+    --accent-color: #339af0;
+    --emoji-hover: #264fa0;
+    --shadow: rgba(0, 0, 0, 0.7);
+  }
+  /* Layout */
+  #app {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 6px 15px var(--shadow);
+    background: var(--bg);
+  }
+  @media (max-width: 500px) {
+    #app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr auto;
+    }
+  }
+  /* Sidebar - Contacts & Chats */
+  #sidebar {
+    border-right: 1px solid var(--border-color);
+    background: var(--chat-bg);
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar-header {
+    padding: 10px 16px;
     font-weight: 700;
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--chat-bg);
+    color: var(--primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    user-select: none;
   }
-  header .company {
-    font-size: 12px;
-    opacity: 0.7;
-    letter-spacing: 1.2px;
+  #sidebar-header button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
   }
-  /* Chat container */
-  #chat {
+  #sidebar-header button:hover {
+    background: var(--primary-dark);
+  }
+  #search-contacts {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  #search-contacts input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    background: var(--input-bg);
+    color: var(--text);
+  }
+  #contacts-list {
     flex: 1;
-    background: #121212;
-    padding: 10px;
+    overflow-y: auto;
+  }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .contact-item:hover, .contact-item.active {
+    background-color: var(--emoji-hover);
+  }
+  .contact-avatar {
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--secondary);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-align: center;
+    line-height: 44px;
+    user-select: none;
+    overflow: hidden;
+  }
+  .contact-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: var(--online-green);
+    border: 2px solid var(--chat-bg);
+    border-radius: 50%;
+  }
+  .contact-info {
+    margin-left: 12px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .contact-name {
+    font-weight: 600;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .contact-last-message {
+    font-size: 0.85rem;
+    color: var(--secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 4px;
+  }
+  .message-time {
+    font-size: 0.75rem;
+    color: var(--secondary);
+    margin-left: 6px;
+    flex-shrink: 0;
+  }
+  /* Main Chat section */
+  #chat-section {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    scroll-behavior: smooth;
+    background: var(--chat-bg);
   }
-  /* Chat bubble base */
+  #chat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  #chat-back-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--primary);
+    margin-right: 10px;
+  }
+  #chat-header .contact-avatar {
+    width: 38px;
+    height: 38px;
+  }
+  #chat-header .chat-contact-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-left: 12px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--chat-bg);
+    scroll-behavior: smooth;
+    user-select: text;
+  }
   .message {
     max-width: 75%;
     margin-bottom: 12px;
-    padding: 10px 15px;
+    padding: 8px 14px;
     border-radius: 20px;
     position: relative;
-    word-wrap: break-word;
-    font-size: 14px;
-    line-height: 1.4;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+    font-size: 0.95rem;
+    line-height: 1.3;
+    word-break: break-word;
   }
-  /* Left side (User 1) */
-  .msg-left {
-    background: linear-gradient(135deg, #6a8de3, #3a529b);
-    border-bottom-left-radius: 4px;
-    color: #f0f7ff;
-    align-self: flex-start;
-  }
-  /* Right side (User 2) */
-  .msg-right {
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
+  .message.sent {
+    margin-left: auto;
+    background: var(--primary);
+    color: white;
     border-bottom-right-radius: 4px;
-    color: #e0f7ff;
-    align-self: flex-end;
   }
-  /* Timestamp */
-  .timestamp {
-    font-size: 10px;
-    opacity: 0.5;
+  .message.received {
+    background: var(--input-bg);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+  }
+  .message .msg-time {
+    font-size: 0.65rem;
+    color: inherit;
+    opacity: 0.8;
     position: absolute;
-    bottom: 3px;
+    bottom: 4px;
     right: 10px;
-    user-select: none;
   }
-  /* Input container */
-  #input-section {
-    background: #24243e;
-    padding: 10px 15px;
+  .message.sent .msg-time {
+    color: #d0e6ff;
+  }
+  .message .status-icon {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  /* Message Delivery Status Icons */
+  .icon-check {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+  .icon-double-check {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+  .message.sent .status-icon.sent {
+    color: #a8c6ff;
+  }
+  .message.sent .status-icon.delivered {
+    color: var(--delivered-color);
+  }
+  .message.sent .status-icon.read {
+    color: var(--read-color);
+  }
+  /* Message input area */
+  #message-input-container {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border-color);
+    background: var(--chat-bg);
     display: flex;
     align-items: center;
   }
-  #input {
+  #message-input {
     flex: 1;
-    border-radius: 50px;
+    resize: none;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    padding: 8px 14px;
+    font-size: 1rem;
+    max-height: 90px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: inherit;
+    line-height: 1.3;
+    outline-offset: 2px;
+    outline-color: transparent;
+    transition: outline-color 0.15s ease-in-out;
+  }
+  #message-input:focus {
+    outline-color: var(--primary);
+  }
+  #emoji-toggle {
+    background: none;
     border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    background: #2e2e4a;
-    color: #eee;
-    outline: none;
-    transition: background 0.2s ease-in-out;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--secondary);
+    margin-left: 8px;
+    padding: 4px;
+    user-select: none;
   }
-  #input::placeholder {
-    color: #bbb;
+  #emoji-toggle:hover {
+    color: var(--primary);
   }
-  #input:focus {
-    background: #48487b;
-  }
-  button#send-btn {
-    background: #00aaff;
+  #send-button {
+    background: var(--primary);
     border: none;
     color: white;
-    font-weight: 700;
-    padding: 10px 16px;
-    margin-left: 10px;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    user-select: none;
-  }
-  button#send-btn:disabled {
-    background: #555;
-    cursor: not-allowed;
-  }
-  button#send-btn:hover:not(:disabled) {
-    background: #008fcc;
-  }
-  /* Toggle user button */
-  #toggle-user {
-    background: #0f3557;
-    border: none;
-    color: #8fc1ff;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 8px 14px;
+    margin-left: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 18px;
     cursor: pointer;
     user-select: none;
-    transition: background 0.3s ease;
+    transition: background-color 0.15s;
   }
-  #toggle-user:hover {
-    background: #1750a6;
+  #send-button:disabled {
+    background: var(--secondary);
+    cursor: default;
   }
-  /* Media preview */
-  #media-preview {
-    max-width: 120px;
-    max-height: 120px;
-    border-radius: 12px;
-    margin-right: 8px;
-    object-fit: cover;
+  #send-button:hover:not(:disabled) {
+    background: var(--primary-dark);
+  }
+  /* Emoji picker container */
+  #emoji-picker {
+    position: absolute;
+    bottom: 60px;
+    right: 18px;
+    width: 250px;
+    max-height: 170px;
+    overflow-y: auto;
+    background: var(--chat-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     display: none;
+    padding: 10px;
+    box-shadow: 0 5px 20px var(--shadow);
+    user-select: none;
+    z-index: 100;
   }
-  /* Attach image button style */
-  #attach-label {
-    background: #4458f7;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    justify-content: center;
+  #emoji-picker.show {
+    display: block;
+  }
+  #emoji-picker span {
+    font-size: 1.4rem;
+    padding: 4px 6px;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.15s;
+  }
+  #emoji-picker span:hover {
+    background: var(--emoji-hover);
+    border-radius: 6px;
+  }
+  /* Profile modal */
+  #profile-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
     align-items: center;
-    margin-left: 10px;
+    justify-content: center;
+    z-index: 200;
+  }
+  #profile-modal.show {
+    display: flex;
+  }
+  #profile-content {
+    background: var(--chat-bg);
+    padding: 20px 24px 24px;
+    border-radius: 12px;
+    width: 320px;
+    max-width: 90vw;
+    box-shadow: 0 6px 20px var(--shadow);
+    color: var(--text);
+  }
+  #profile-content h2 {
+    margin: 0 0 12px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary);
+  }
+  #profile-content label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  #profile-content input[type="text"],
+  #profile-content textarea {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 1rem;
+    background: var(--input-bg);
+    color: var(--text);
+    resize: vertical;
+  }
+  #profile-content textarea {
+    min-height: 60px;
+  }
+  #profile-content img {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-bottom: 12px;
+  }
+  #profile-actions {
+    margin-top: 16px;
+    text-align: right;
+  }
+  #profile-actions button {
+    background: var(--primary);
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    user-select: none;
   }
-  #attach-label:hover {
-    background: #2a36d8;
-  }
-  #attach-label svg {
-    fill: white;
-    width: 20px;
-    height: 20px;
-  }
-  #attach-btn {
-    display: none;
+  #profile-actions button:hover {
+    background: var(--primary-dark);
   }
   /* Scrollbar styling */
-  #chat::-webkit-scrollbar {
-    width: 6px;
+  #contacts-list::-webkit-scrollbar, #chat-messages::-webkit-scrollbar, #emoji-picker::-webkit-scrollbar {
+    width: 8px;
   }
-  #chat::-webkit-scrollbar-track {
-    background: #1e1e2f;
+  #contacts-list::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, #emoji-picker::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
   }
-  #chat::-webkit-scrollbar-thumb {
-    background: #4a4a6a;
-    border-radius: 3px;
+  #contacts-list::-webkit-scrollbar-track, #chat-messages::-webkit-scrollbar-track, #emoji-picker::-webkit-scrollbar-track {
+    background: transparent;
   }
-
-  /* Responsive tweaks */
-  @media (max-width: 400px) {
-    #app {
-      width: 100vw;
-      height: 100vh;
-      border-radius: 0;
-    }
-  }
-
 </style>
 </head>
 <body>
-  <div id="app" role="main" aria-label="Nexora Chat Application">
-    <header>
-      <div>
-        Nexora Chat
-        <div class="company" aria-label="Parent Company Name">by MultiGen Ai</div>
-      </div>
-      <button id="toggle-user" aria-pressed="false" aria-label="Toggle active chat user">Active User: User 1</button>
+<div id="app" class="">
+  <aside id="sidebar" role="complementary" aria-label="Contacts and Chats">
+    <header id="sidebar-header">
+      Nexora
+      <button id="btn-profile" title="Edit Profile" aria-label="Edit Profile">Profile</button>
     </header>
-
-    <section id="chat" aria-live="polite" aria-relevant="additions" tabindex="0" aria-label="Chat message area">
-      <!-- Chat messages will appear here -->
+    <section id="search-contacts" role="search">
+      <input type="search" id="contact-search" aria-label="Search Contacts" placeholder="Search or start new chat" autocomplete="off" />
     </section>
-
-    <section id="input-section">
-      <img id="media-preview" alt="Media preview" />
-      <input type="file" id="attach-btn" accept="image/*,video/*,audio/*" aria-label="Attach media" />
-      <label for="attach-btn" id="attach-label" title="Attach media" role="button" tabindex="0" aria-hidden="false">
-        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M21.44 11.05l-9.7 9.7a3 3 0 01-4.24-4.24l9.7-9.7a1 1 0 011.41 1.42l-9.7 9.7a1 1 0 001.42 1.42l9.7-9.7a3 3 0 00-4.24-4.24l-9.7 9.7a5 5 0 007.07 7.07l9.7-9.7a.99.99 0 00-1.41-1.42z"></path></svg>
-      </label>
-      <input id="input" type="text" aria-label="Type your message" placeholder="Type a message..." />
-      <button id="send-btn" aria-disabled="true" aria-label="Send message">Send</button>
+    <nav id="contacts-list" role="list" aria-label="List of Contacts and Chats">
+      <!-- Contacts will be rendered here -->
+    </nav>
+  </aside>
+  <main id="chat-section" role="main" aria-label="Chat area">
+    <header id="chat-header">
+      <button id="chat-back-btn" aria-label="Back to contacts list" title="Back to contacts list">←</button>
+      <div class="contact-avatar" aria-hidden="true"></div>
+      <div class="chat-contact-name" aria-live="polite" aria-atomic="true"></div>
+    </header>
+    <section id="chat-messages" role="log" aria-live="polite" aria-relevant="additions">
+      <!-- Messages will be rendered here -->
     </section>
+    <form id="message-form" aria-label="Send message form">
+      <div id="message-input-container">
+        <textarea id="message-input" rows="1" maxlength="500" placeholder="Type a message..." aria-label="Message input"></textarea>
+        <button type="button" id="emoji-toggle" aria-label="Toggle emoji picker" title="Toggle emoji picker">😊</button>
+        <button type="submit" id="send-button" disabled aria-label="Send message">Send</button>
+      </div>
+      <div id="emoji-picker" role="application" aria-label="Emoji picker" tabindex="0">
+        <!-- Emojis injected here -->
+      </div>
+    </form>
+  </main>
+</div>
+
+<!-- Profile modal for editing profile -->
+<div id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title" tabindex="-1">
+  <div id="profile-content">
+    <h2 id="profile-modal-title">Edit Profile</h2>
+    <form id="profile-form">
+      <label for="profile-displayname">Display Name <span style="color:red;">*</span></label>
+      <input type="text" id="profile-displayname" name="displayName" required maxlength="30" autocomplete="name" />
+      <label for="profile-about">About / Status</label>
+      <textarea id="profile-about" name="about" maxlength="100" placeholder="e.g. Available, Busy, At work"></textarea>
+      <label for="profile-picture">Profile Picture URL</label>
+      <input type="url" id="profile-picture" name="profilePicture" placeholder="Image URL (optional)" autocomplete="off" />
+      <div id="profile-picture-preview" aria-hidden="true" style="margin-top: 10px; text-align:center;"></div>
+      <div id="profile-actions">
+        <button type="submit">Save</button>
+      </div>
+    </form>
   </div>
+</div>
 
 <script>
-  (() => {
-    // Maintain chat state and current user
-    let activeUser = 'user1'; // user1 or user2
-    const userNames = {user1:'User 1', user2:'User 2'};
-    const chatContainer = document.getElementById('chat');
-    const toggleUserBtn = document.getElementById('toggle-user');
-    const inputField = document.getElementById('input');
-    const sendBtn = document.getElementById('send-btn');
-    const attachInput = document.getElementById('attach-btn');
-    const mediaPreview = document.getElementById('media-preview');
+  "use strict";
 
-    // Messages array: each message object = {id, sender, text, media, timestamp}
-    const messages = [];
+  // Data simulation
+  const contacts = [
+    { id: 'user1', displayName: 'Alice', online: true, profilePicture: '', lastMessage: 'Hey! How are you?', lastMessageTime: '11:45 AM', blocked: false },
+    { id: 'user2', displayName: 'Bob', online: false, profilePicture: '', lastMessage: 'Sent the docs.', lastMessageTime: 'Yesterday', blocked: false },
+    { id: 'user3', displayName: 'Carol', online: true, profilePicture: '', lastMessage: '👍', lastMessageTime: '10:15 AM', blocked: false },
+    { id: 'user4', displayName: 'David', online: false, profilePicture: '', lastMessage: 'Meeting at 3 PM.', lastMessageTime: 'Tue', blocked: false },
+  ];
 
-    // Helper to format timestamps
-    function formatTimestamp(date = new Date()) {
-      return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  // Each chat keyed by contact id; message objects: {id,fromSelf,text,time,status}
+  let chats = {
+    'user1': [
+      {id: 'm1', fromSelf: false, text: 'Hello!', time: '11:40 AM', status: 'read'},
+      {id: 'm2', fromSelf: true, text: 'Hi Alice! How are you?', time: '11:42 AM', status: 'read'},
+      {id: 'm3', fromSelf: false, text: 'Hey! How are you?', time: '11:45 AM', status: 'read'}
+    ],
+    'user2': [
+      {id: 'm1', fromSelf: true, text: 'Did you send the files?', time: 'Yesterday 3:10 PM', status: 'delivered'},
+      {id: 'm2', fromSelf: false, text: 'Sent the docs.', time: 'Yesterday 3:12 PM', status: 'read'}
+    ],
+    'user3': [
+      {id: 'm1', fromSelf: false, text: '👍', time: '10:15 AM', status: 'read'}
+    ],
+    'user4': []
+  };
+
+  let currentChatId = null;
+  let isDarkMode = false;
+  // User profile data (simulate stored in localStorage)
+  let userProfile = JSON.parse(localStorage.getItem('nexoraProfile')) || {
+    displayName: 'You',
+    about: 'Hey there! I am using Nexora.',
+    profilePicture: ''
+  };
+
+  // DOM references
+  const appEl = document.getElementById('app');
+  const contactsListEl = document.getElementById('contacts-list');
+  const chatSectionEl = document.getElementById('chat-section');
+  const chatHeaderEl = document.getElementById('chat-header');
+  const contactAvatarEl = chatHeaderEl.querySelector('.contact-avatar');
+  const chatContactNameEl = chatHeaderEl.querySelector('.chat-contact-name');
+  const chatMessagesEl = document.getElementById('chat-messages');
+  const messageForm = document.getElementById('message-form');
+  const messageInput = document.getElementById('message-input');
+  const sendButton = document.getElementById('send-button');
+  const emojiToggle = document.getElementById('emoji-toggle');
+  const emojiPicker = document.getElementById('emoji-picker');
+  const contactSearchInput = document.getElementById('contact-search');
+  const profileModal = document.getElementById('profile-modal');
+  const profileForm = document.getElementById('profile-form');
+  const profileDisplayName = document.getElementById('profile-displayname');
+  const profileAbout = document.getElementById('profile-about');
+  const profilePictureInput = document.getElementById('profile-picture');
+  const profilePicturePreview = document.getElementById('profile-picture-preview');
+  const btnProfile = document.getElementById('btn-profile');
+  const chatBackBtn = document.getElementById('chat-back-btn');
+
+  // Utility
+  function createAvatar(name, picture) {
+    if (picture) {
+      const img = document.createElement('img');
+      img.src = picture;
+      img.alt = name;
+      return img;
+    } else {
+      const initials = name.split(' ').map(w => w[0]).join('').toUpperCase();
+      const span = document.createElement('span');
+      span.textContent = initials;
+      span.style.userSelect = 'none';
+      return span;
     }
+  }
 
-    // Create message element
-    function createMessageElement({id, sender, text, media, timestamp}) {
-      const msgEl = document.createElement('div');
-      msgEl.classList.add('message', sender === 'user1' ? 'msg-left' : 'msg-right');
-      msgEl.setAttribute('data-id', id);
-      msgEl.setAttribute('role', 'article');
-      msgEl.setAttribute('aria-label', `${userNames[sender]} message`);
+  // Format time today or date string
+  function formatTime(timeStr) {
+    // Just return as is since simulation simplifies time strings
+    return timeStr;
+  }
 
-      // Text content
-      if (text) {
-        const textNode = document.createElement('div');
-        textNode.textContent = text;
-        msgEl.appendChild(textNode);
+  // Render contacts list, optionally filtered by search term
+  function renderContactsList(filter = '') {
+    contactsListEl.innerHTML = '';
+    let filteredContacts = contacts.filter(c => c.displayName.toLowerCase().includes(filter.toLowerCase()));
+    if (filteredContacts.length === 0) {
+      const noContacts = document.createElement('div');
+      noContacts.style.padding = '18px';
+      noContacts.style.textAlign = 'center';
+      noContacts.style.color = 'var(--secondary)';
+      noContacts.textContent = 'No contacts found';
+      contactsListEl.appendChild(noContacts);
+      return;
+    }
+    filteredContacts.forEach(contact => {
+      const contactItem = document.createElement('button');
+      contactItem.classList.add('contact-item');
+      contactItem.setAttribute('role', 'listitem');
+      contactItem.setAttribute('tabindex', '0');
+      if (contact.id === currentChatId) contactItem.classList.add('active');
+      contactItem.dataset.contactId = contact.id;
+      contactItem.ariaLabel = `${contact.displayName}${contact.online ? ', online' : ', offline'}`;
+      // avatar
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'contact-avatar';
+      avatarDiv.appendChild(createAvatar(contact.displayName, contact.profilePicture));
+      if (contact.online) {
+        const onlineIndicator = document.createElement('span');
+        onlineIndicator.className = 'online-indicator';
+        avatarDiv.appendChild(onlineIndicator);
       }
-      // Media content
-      if (media) {
-        let mediaEl;
-        if(media.type.startsWith('image/')) {
-          mediaEl = document.createElement('img');
-          mediaEl.src = media.data;
-          mediaEl.alt = 'Attached image';
-          mediaEl.style.maxWidth = '200px';
-          mediaEl.style.borderRadius = '12px';
-          mediaEl.style.display = 'block';
-          mediaEl.style.marginTop = '6px';
-        } else if(media.type.startsWith('video/')) {
-          mediaEl = document.createElement('video');
-          mediaEl.src = media.data;
-          mediaEl.controls = true;
-          mediaEl.style.maxWidth = '200px';
-          mediaEl.style.borderRadius = '12px';
-          mediaEl.style.display = 'block';
-          mediaEl.style.marginTop = '6px';
-        } else if(media.type.startsWith('audio/')) {
-          mediaEl = document.createElement('audio');
-          mediaEl.src = media.data;
-          mediaEl.controls = true;
-          mediaEl.style.display = 'block';
-          mediaEl.style.marginTop = '6px';
+      contactItem.appendChild(avatarDiv);
+      // info
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'contact-info';
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'contact-name';
+      nameDiv.textContent = contact.displayName;
+      const lastMsgDiv = document.createElement('div');
+      lastMsgDiv.className = 'contact-last-message';
+      lastMsgDiv.textContent = contact.lastMessage || '';
+      infoDiv.appendChild(nameDiv);
+      infoDiv.appendChild(lastMsgDiv);
+      contactItem.appendChild(infoDiv);
+      // time
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'message-time';
+      timeSpan.textContent = contact.lastMessageTime || '';
+      contactItem.appendChild(timeSpan);
+
+      contactItem.addEventListener('click', () => {
+        openChat(contact.id);
+        // On small screens hide sidebar
+        if (window.innerWidth <= 500) {
+          appEl.style.gridTemplateColumns = '1fr';
+          chatBackBtn.style.display = 'inline-block';
         }
-        if(mediaEl) msgEl.appendChild(mediaEl);
-      }
+      });
 
-      // Timestamp
-      const timeEl = document.createElement('span');
-      timeEl.classList.add('timestamp');
-      timeEl.textContent = formatTimestamp(timestamp);
-      msgEl.appendChild(timeEl);
-
-      return msgEl;
-    }
-
-    // Append message to chat container and scroll to bottom
-    function appendMessage(message) {
-      const el = createMessageElement(message);
-      chatContainer.appendChild(el);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    // Update toggle button aria-pressed and label
-    function updateToggleUserUI() {
-      toggleUserBtn.textContent = `Active User: ${userNames[activeUser]}`;
-      toggleUserBtn.setAttribute('aria-pressed', activeUser === 'user2');
-      inputField.focus();
-    }
-
-    // Handle toggle user
-    toggleUserBtn.addEventListener('click', () => {
-      activeUser = activeUser === 'user1' ? 'user2' : 'user1';
-      updateToggleUserUI();
+      contactsListEl.appendChild(contactItem);
     });
+  }
 
-    // Enable/disable send button based on input or media exists
-    function updateSendButtonState() {
-      sendBtn.disabled = !(inputField.value.trim() || attachInput.files.length);
-      sendBtn.setAttribute('aria-disabled', sendBtn.disabled.toString());
-    }
+  // Render chat messages for current chat
+  function renderChatMessages() {
+    chatMessagesEl.innerHTML = '';
+    if (!currentChatId || !chats[currentChatId]) return;
+    chats[currentChatId].forEach(msg => {
+      const messageDiv = document.createElement('article');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(msg.fromSelf ? 'sent' : 'received');
+      messageDiv.setAttribute('tabindex', '0');
+      messageDiv.setAttribute('aria-label', (msg.fromSelf ? 'Sent message: ' : 'Received message: ') + msg.text);
 
-    inputField.addEventListener('input', updateSendButtonState);
+      // Message text
+      const msgText = document.createElement('div');
+      msgText.className = 'msg-text';
+      msgText.textContent = msg.text;
+      messageDiv.appendChild(msgText);
 
-    // Show media preview if attached
-    attachInput.addEventListener('change', () => {
-      if(attachInput.files.length) {
-        const file = attachInput.files[0];
-        if(file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = e => {
-            mediaPreview.src = e.target.result;
-            mediaPreview.style.display = 'inline-block';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          mediaPreview.style.display = 'none';
-          mediaPreview.src = '';
+      // Time and status
+      const timeSpan = document.createElement('time');
+      timeSpan.className = 'msg-time';
+      timeSpan.textContent = msg.time;
+      timeSpan.dateTime = new Date().toISOString();
+      messageDiv.appendChild(timeSpan);
+
+      if (msg.fromSelf) {
+        const statusIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        statusIcon.setAttribute('class', 'status-icon ' + msg.status);
+        statusIcon.setAttribute('viewBox', '0 0 24 24');
+        statusIcon.setAttribute('fill', 'none');
+        statusIcon.setAttribute('stroke', 'currentColor');
+        statusIcon.setAttribute('stroke-width', '2');
+        statusIcon.setAttribute('stroke-linecap', 'round');
+        statusIcon.setAttribute('stroke-linejoin', 'round');
+        statusIcon.style.width = '16px';
+        statusIcon.style.height = '16px';
+        statusIcon.setAttribute('aria-hidden', 'true');
+        // Draw double checkmark icon
+        if (msg.status === 'sent') {
+          // single checkmark
+          statusIcon.innerHTML = '<polyline points="20 6 9 17 4 12" class="icon-check"/>';
+        } else if (msg.status === 'delivered') {
+          // double checkmark in same color
+          statusIcon.innerHTML = '<polyline points="20 6 9 17 4 12" class="icon-check"/><polyline points="21 6 10 17 5 12" class="icon-double-check"/>';
+        } else if (msg.status === 'read') {
+          // double checkmark colored
+          statusIcon.innerHTML = '<polyline points="20 6 9 17 4 12" class="icon-check"/><polyline points="21 6 10 17 5 12" class="icon-double-check"/>';
+          statusIcon.style.color = 'var(--read-color)';
         }
-      } else {
-        mediaPreview.style.display = 'none';
-        mediaPreview.src = '';
+        messageDiv.appendChild(statusIcon);
       }
-      updateSendButtonState();
-    });
 
-    // Clear input and media
-    function clearInputs() {
-      inputField.value = '';
-      attachInput.value = '';
-      mediaPreview.src = '';
-      mediaPreview.style.display = 'none';
-      updateSendButtonState();
+      chatMessagesEl.appendChild(messageDiv);
+    });
+    // Scroll to bottom
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  // Open chat with contact id
+  function openChat(contactId) {
+    currentChatId = contactId;
+    // Highlight selected contact in sidebar
+    document.querySelectorAll('.contact-item').forEach(ci => {
+      if (ci.dataset.contactId === contactId) {
+        ci.classList.add('active');
+      } else {
+        ci.classList.remove('active');
+      }
+    });
+    // Show contact name & avatar
+    let contact = contacts.find(c => c.id === contactId);
+    if (!contact) return;
+    chatContactNameEl.textContent = contact.displayName;
+    contactAvatarEl.innerHTML = '';
+    contactAvatarEl.appendChild(createAvatar(contact.displayName, contact.profilePicture));
+    // Clear emoji picker if open
+    emojiPicker.classList.remove('show');
+    // Render chat messages
+    renderChatMessages();
+    // Focus on input
+    setTimeout(() => {
+      messageInput.focus();
+    }, 200);
+  }
+
+  // Send message simulation
+  function sendMessage(text) {
+    if (!currentChatId || !text.trim()) return;
+    const now = new Date();
+    const timeDisplay = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    // Add message to chats
+    const newMsg = {
+      id: 'm' + (chats[currentChatId].length + 1),
+      fromSelf: true,
+      text: text.trim(),
+      time: timeDisplay,
+      status: 'sent'
+    };
+    chats[currentChatId].push(newMsg);
+    // Update last message preview in contacts
+    const contact = contacts.find(c => c.id === currentChatId);
+    if (contact) {
+      contact.lastMessage = newMsg.text;
+      contact.lastMessageTime = timeDisplay;
     }
+    // Render chat & contacts
+    renderChatMessages();
+    renderContactsList(contactSearchInput.value);
+    // Simulate delivery + read after delay
+    setTimeout(() => {
+      newMsg.status = 'delivered';
+      renderChatMessages();
+    }, 1000);
+    setTimeout(() => {
+      newMsg.status = 'read';
+      renderChatMessages();
+    }, 2500);
+  }
 
-    // Handle send message
-    sendBtn.addEventListener('click', () => {
-      const text = inputField.value.trim();
-      const file = attachInput.files[0];
-      if(!text && !file) return;
+  // Emoji picker with common emojis
+  const emojis = [
+    "😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂",
+    "🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😜",
+    "🤪","😝","🤑","🤗","🤭","🤫","🤔","🤐","🤨","😐","😑",
+    "😶","😏","😒","🙄","😬","🤥","😌","😔","😪","🤤","😴",
+    "😷","🤒","🤕","🤢","🤮","🤧","🥵","🥶","🥴","😵","🤯",
+    "🤠","🥳","😎","🤓","🧐","😕","😟","🙁","☹️","😮","😯",
+    "😲","😳","🥺","😦","😧","😨","😰","😥","😢","😭","😱",
+    "😖","😣","😞","😓","😩","😫","😤","😡","😠","🤬","😈"
+  ];
 
-      if(file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const newMsg = {
-            id: Date.now().toString(),
-            sender: activeUser,
-            text: text || '',
-            media: {type: file.type, data: e.target.result},
-            timestamp: new Date(),
-          };
-          messages.push(newMsg);
-          appendMessage(newMsg);
-          clearInputs();
-        };
-        reader.readAsDataURL(file);
-      } else {
-        const newMsg = {
-          id: Date.now().toString(),
-          sender: activeUser,
-          text,
-          media: null,
-          timestamp: new Date(),
-        };
-        messages.push(newMsg);
-        appendMessage(newMsg);
-        clearInputs();
-      }
+  // Populate emoji picker
+  function populateEmojiPicker() {
+    emojiPicker.innerHTML = '';
+    emojis.forEach(e => {
+      const span = document.createElement('span');
+      span.textContent = e;
+      span.setAttribute('tabindex', 0);
+      span.setAttribute('role', 'button');
+      span.setAttribute('aria-label', 'Emoji ' + e);
+      span.addEventListener('click', () => {
+        insertAtCursor(messageInput, e);
+        messageInput.focus();
+        updateSendButton();
+      });
+      span.addEventListener('keydown', evt => {
+        if (evt.key === 'Enter' || evt.key === ' ') {
+          evt.preventDefault();
+          span.click();
+        }
+      });
+      emojiPicker.appendChild(span);
     });
+  }
 
-    // Initial UI setup
-    updateToggleUserUI();
-    updateSendButtonState();
+  // Insert emoji or text at caret position inside textarea/input
+  function insertAtCursor(el, text) {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const val = el.value;
+    el.value = val.substring(0, start) + text + val.substring(end);
+    el.selectionStart = el.selectionEnd = start + text.length;
+    updateSendButton();
+  }
 
-  })();
+  // Update send button status depending on input content
+  function updateSendButton() {
+    sendButton.disabled = messageInput.value.trim() === '';
+  }
+
+  // Toggle emoji picker visibility
+  function toggleEmojiPicker() {
+    const isVisible = emojiPicker.classList.contains('show');
+    if (isVisible) {
+      emojiPicker.classList.remove('show');
+    } else {
+      emojiPicker.classList.add('show');
+      emojiPicker.focus();
+    }
+  }
+
+  // Search contacts while typing
+  contactSearchInput.addEventListener('input', e => {
+    renderContactsList(e.target.value);
+  });
+
+  // Handle message input changes
+  messageInput.addEventListener('input', updateSendButton);
+
+  // Handle emoji toggle button
+  emojiToggle.addEventListener('click', toggleEmojiPicker);
+
+  // Hide emoji picker when clicking outside
+  document.addEventListener('click', e => {
+    if (!emojiPicker.contains(e.target) && e.target !== emojiToggle) {
+      emojiPicker.classList.remove('show');
+    }
+  });
+
+  // Submit message form
+  messageForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = messageInput.value;
+    if (text.trim() === '') return;
+    sendMessage(text);
+    messageInput.value = '';
+    updateSendButton();
+  });
+
+  // Keyboard enter sends message, Shift+Enter new line
+  messageInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendButton.disabled) {
+        sendButton.click();
+      }
+    }
+  });
+
+  // Open profile modal
+  btnProfile.addEventListener('click', () => {
+    openProfileModal();
+  });
+
+  // Profile modal form submit
+  profileForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const dispName = profileDisplayName.value.trim();
+    if (!dispName) {
+      alert('Display Name is required.');
+      return;
+    }
+    userProfile.displayName = dispName;
+    userProfile.about = profileAbout.value.trim();
+    userProfile.profilePicture = profilePictureInput.value.trim();
+    localStorage.setItem('nexoraProfile', JSON.stringify(userProfile));
+    closeProfileModal();
+    alert('Profile saved.');
+  });
+
+  // Update profile picture preview when URL changes
+  profilePictureInput.addEventListener('input', () => {
+    const url = profilePictureInput.value.trim();
+    profilePicturePreview.innerHTML = '';
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'Profile Picture Preview';
+      img.style.width = '80px';
+      img.style.height = '80px';
+      img.style.borderRadius = '50%';
+      img.style.objectFit = 'cover';
+      profilePicturePreview.appendChild(img);
+    }
+  });
+
+  // Open profile modal with current data
+  function openProfileModal() {
+    profileDisplayName.value = userProfile.displayName || '';
+    profileAbout.value = userProfile.about || '';
+    profilePictureInput.value = userProfile.profilePicture || '';
+    profilePictureInput.dispatchEvent(new Event('input'));
+    profileModal.classList.add('show');
+    profileModal.focus();
+  }
+  function closeProfileModal() {
+    profileModal.classList.remove('show');
+  }
+
+  // Close profile modal by clicking outside or pressing Escape
+  profileModal.addEventListener('click', (e) => {
+    if (e.target === profileModal) closeProfileModal();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && profileModal.classList.contains('show')) {
+      closeProfileModal();
+    }
+  });
+
+  // Chat back button for small screens
+  chatBackBtn.addEventListener('click', () => {
+    appEl.style.gridTemplateColumns = '1fr 2fr';
+    chatBackBtn.style.display = 'none';
+    currentChatId = null;
+    renderContactsList(contactSearchInput.value);
+    chatContactNameEl.textContent = '';
+    contactAvatarEl.innerHTML = '';
+    chatMessagesEl.innerHTML = '';
+  });
+
+  // Dark mode toggle (for demo)
+  const darkToggleBtn = document.createElement('button');
+  darkToggleBtn.textContent = '🌙';
+  darkToggleBtn.title = 'Toggle Dark Mode';
+  darkToggleBtn.setAttribute('aria-label', 'Toggle Dark Mode');
+  darkToggleBtn.style.position = 'fixed';
+  darkToggleBtn.style.bottom = '20px';
+  darkToggleBtn.style.right = '20px';
+  darkToggleBtn.style.background = 'var(--primary)';
+  darkToggleBtn.style.border = 'none';
+  darkToggleBtn.style.borderRadius = '50%';
+  darkToggleBtn.style.width = '40px';
+  darkToggleBtn.style.height = '40px';
+  darkToggleBtn.style.cursor = 'pointer';
+  darkToggleBtn.style.fontSize = '1.5rem';
+  darkToggleBtn.style.color = 'white';
+  darkToggleBtn.style.boxShadow = '0 3px 8px var(--shadow)';
+  darkToggleBtn.style.userSelect = 'none';
+  darkToggleBtn.style.zIndex = '300';
+  document.body.appendChild(darkToggleBtn);
+  darkToggleBtn.addEventListener('click', () => {
+    isDarkMode = !isDarkMode;
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      darkToggleBtn.textContent = '☀️';
+    } else {
+      document.documentElement.classList.remove('dark');
+      darkToggleBtn.textContent = '🌙';
+    }
+  });
+
+  // Onload initialization
+  window.addEventListener('load', () => {
+    renderContactsList();
+    populateEmojiPicker();
+    // Open first chat by default on large screens
+    if (contacts.length > 0) {
+      openChat(contacts[0].id);
+    }
+  });
+
 </script>
 </body>
 </html>
+
