@@ -1,209 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nexora</title>
-  <style>
-    /* Reset & base */
-    *, *::before, *::after {
-      box-sizing: border-box;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nexora - Messaging App by MultiGen Ai</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin:0; padding:0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: #eee;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #app {
+    width: 350px;
+    height: 600px;
+    background: #1e1e2f;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  /* Header */
+  header {
+    background: linear-gradient(90deg, #4b6cb7, #182848);
+    color: #fff;
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  header .company {
+    font-size: 12px;
+    opacity: 0.7;
+    letter-spacing: 1.2px;
+  }
+  /* Chat container */
+  #chat {
+    flex: 1;
+    background: #121212;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  /* Chat bubble base */
+  .message {
+    max-width: 75%;
+    margin-bottom: 12px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  }
+  /* Left side (User 1) */
+  .msg-left {
+    background: linear-gradient(135deg, #6a8de3, #3a529b);
+    border-bottom-left-radius: 4px;
+    color: #f0f7ff;
+    align-self: flex-start;
+  }
+  /* Right side (User 2) */
+  .msg-right {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    border-bottom-right-radius: 4px;
+    color: #e0f7ff;
+    align-self: flex-end;
+  }
+  /* Timestamp */
+  .timestamp {
+    font-size: 10px;
+    opacity: 0.5;
+    position: absolute;
+    bottom: 3px;
+    right: 10px;
+    user-select: none;
+  }
+  /* Input container */
+  #input-section {
+    background: #24243e;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+  }
+  #input {
+    flex: 1;
+    border-radius: 50px;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    background: #2e2e4a;
+    color: #eee;
+    outline: none;
+    transition: background 0.2s ease-in-out;
+  }
+  #input::placeholder {
+    color: #bbb;
+  }
+  #input:focus {
+    background: #48487b;
+  }
+  button#send-btn {
+    background: #00aaff;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 10px 16px;
+    margin-left: 10px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    user-select: none;
+  }
+  button#send-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+  }
+  button#send-btn:hover:not(:disabled) {
+    background: #008fcc;
+  }
+  /* Toggle user button */
+  #toggle-user {
+    background: #0f3557;
+    border: none;
+    color: #8fc1ff;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  #toggle-user:hover {
+    background: #1750a6;
+  }
+  /* Media preview */
+  #media-preview {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 12px;
+    margin-right: 8px;
+    object-fit: cover;
+    display: none;
+  }
+  /* Attach image button style */
+  #attach-label {
+    background: #4458f7;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #attach-label:hover {
+    background: #2a36d8;
+  }
+  #attach-label svg {
+    fill: white;
+    width: 20px;
+    height: 20px;
+  }
+  #attach-btn {
+    display: none;
+  }
+  /* Scrollbar styling */
+  #chat::-webkit-scrollbar {
+    width: 6px;
+  }
+  #chat::-webkit-scrollbar-track {
+    background: #1e1e2f;
+  }
+  #chat::-webkit-scrollbar-thumb {
+    background: #4a4a6a;
+    border-radius: 3px;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 400px) {
+    #app {
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
     }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #6b73ff 0%, #000dff 100%);
-      color: #fff;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
-      width: 100%;
-      padding: 1rem 2rem;
-      background: rgba(0, 0, 0, 0.3);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      backdrop-filter: saturate(180%) blur(20px);
-    }
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      margin: 0;
-    }
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      margin-left: 1.5rem;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
-    nav a:hover,
-    nav a:focus {
-      color: #ffcc00;
-      outline: none;
-    }
-    main {
-      flex: 1 0 auto;
-      width: 100%;
-      max-width: 900px;
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .hero {
-      margin-top: 3rem;
-      margin-bottom: 4rem;
-      max-width: 600px;
-    }
-    .hero h2 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-    }
-    .hero p {
-      font-size: 1.2rem;
-      color: #e0e0ff;
-      margin-bottom: 2rem;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-    }
-    .btn-primary {
-      background: #ffcc00;
-      color: #000dff;
-      font-weight: 700;
-      padding: 0.75rem 2rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.7);
-      transition: background 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .btn-primary:hover,
-    .btn-primary:focus {
-      background: #ffd933;
-      outline: none;
-      box-shadow: 0 6px 20px rgba(255, 221, 51, 0.9);
-    }
-    section.features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 2rem;
-      margin-bottom: 4rem;
-      width: 100%;
-    }
-    section.features article {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 1.5rem 1.5rem 2rem;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: background 0.3s ease;
-    }
-    section.features article:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    section.features h3 {
-      margin-top: 0;
-      font-size: 1.3rem;
-      margin-bottom: 0.8rem;
-      color: #ffcc00;
-      letter-spacing: 0.05em;
-    }
-    section.features p {
-      font-size: 1rem;
-      color: #eee;
-      line-height: 1.4;
-    }
-    footer {
-      padding: 1.5rem 2rem;
-      font-size: 0.9rem;
-      color: #ccc;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.35);
-      width: 100%;
-      flex-shrink: 0;
-      user-select: none;
-    }
-    @media (max-width: 480px) {
-      .hero h2 {
-        font-size: 1.9rem;
-      }
-      nav a {
-        margin-left: 1rem;
-        font-size: 0.9rem;
-      }
-      header {
-        padding: 1rem;
-      }
-    }
-  </style>
+  }
+
+</style>
 </head>
 <body>
-  <header>
-    <h1>Nexora</h1>
-    <nav>
-      <a href="#features" tabindex="1">Features</a>
-      <a href="#contact" tabindex="2">Contact</a>
-    </nav>
-  </header>
-  <main role="main">
-    <section class="hero" aria-label="Welcome section">
-      <h2>Welcome to Nexora</h2>
-      <p>Your gateway to innovative digital experiences. Discover seamless performance and beautiful design all in one place.</p>
-      <button class="btn-primary" onclick="alert('Thank you for your interest! We will contact you soon.')" tabindex="3">Get Started</button>
+  <div id="app" role="main" aria-label="Nexora Chat Application">
+    <header>
+      <div>
+        Nexora Chat
+        <div class="company" aria-label="Parent Company Name">by MultiGen Ai</div>
+      </div>
+      <button id="toggle-user" aria-pressed="false" aria-label="Toggle active chat user">Active User: User 1</button>
+    </header>
+
+    <section id="chat" aria-live="polite" aria-relevant="additions" tabindex="0" aria-label="Chat message area">
+      <!-- Chat messages will appear here -->
     </section>
-    <section id="features" class="features" aria-label="Features section">
-      <article>
-        <h3>Fast & Reliable</h3>
-        <p>Experience blazing fast loading times and rock-solid uptime powered by advanced cloud infrastructure.</p>
-      </article>
-      <article>
-        <h3>Mobile Friendly</h3>
-        <p>Enjoy a seamless experience on any device with our fully responsive and adaptive design.</p>
-      </article>
-      <article>
-        <h3>Secure & Private</h3>
-        <p>We prioritize your security and privacy with top-notch encryption and best practices.</p>
-      </article>
-      <article>
-        <h3>Intuitive UI</h3>
-        <p>Navigate effortlessly with a clean, modern interface designed for ease of use and engagement.</p>
-      </article>
+
+    <section id="input-section">
+      <img id="media-preview" alt="Media preview" />
+      <input type="file" id="attach-btn" accept="image/*,video/*,audio/*" aria-label="Attach media" />
+      <label for="attach-btn" id="attach-label" title="Attach media" role="button" tabindex="0" aria-hidden="false">
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M21.44 11.05l-9.7 9.7a3 3 0 01-4.24-4.24l9.7-9.7a1 1 0 011.41 1.42l-9.7 9.7a1 1 0 001.42 1.42l9.7-9.7a3 3 0 00-4.24-4.24l-9.7 9.7a5 5 0 007.07 7.07l9.7-9.7a.99.99 0 00-1.41-1.42z"></path></svg>
+      </label>
+      <input id="input" type="text" aria-label="Type your message" placeholder="Type a message..." />
+      <button id="send-btn" aria-disabled="true" aria-label="Send message">Send</button>
     </section>
-    <section id="contact" aria-label="Contact section" style="max-width: 400px; margin: 0 auto 3rem;">
-      <h2>Contact Us</h2>
-      <p>Questions or feedback? Reach out to us!</p>
-      <form onsubmit="event.preventDefault(); alert('Thank you for reaching out!');" role="form">
-        <label for="name" style="display:block; margin-bottom:0.3rem; font-weight:600;">Name</label>
-        <input type="text" id="name" name="name" required style="width:100%; padding:0.5rem; margin-bottom:1rem; border-radius: 5px; border: none;" />
-        <label for="email" style="display:block; margin-bottom:0.3rem; font-weight:600;">Email</label>
-        <input type="email" id="email" name="email" required style="width:100%; padding:0.5rem; margin-bottom:1rem; border-radius: 5px; border: none;" />
-        <label for="message" style="display:block; margin-bottom:0.3rem; font-weight:600;">Message</label>
-        <textarea id="message" name="message" rows="4" required style="width: 100%; padding: 0.5rem; border-radius: 5px; border: none; margin-bottom: 1rem;"></textarea>
-        <button type="submit" class="btn-primary" style="width: 100%;">Send</button>
-      </form>
-    </section>
-  </main>
-  <footer>
-    &copy; 2024 Nexora. All rights reserved.
-  </footer>
+  </div>
+
+<script>
+  (() => {
+    // Maintain chat state and current user
+    let activeUser = 'user1'; // user1 or user2
+    const userNames = {user1:'User 1', user2:'User 2'};
+    const chatContainer = document.getElementById('chat');
+    const toggleUserBtn = document.getElementById('toggle-user');
+    const inputField = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+    const attachInput = document.getElementById('attach-btn');
+    const mediaPreview = document.getElementById('media-preview');
+
+    // Messages array: each message object = {id, sender, text, media, timestamp}
+    const messages = [];
+
+    // Helper to format timestamps
+    function formatTimestamp(date = new Date()) {
+      return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    }
+
+    // Create message element
+    function createMessageElement({id, sender, text, media, timestamp}) {
+      const msgEl = document.createElement('div');
+      msgEl.classList.add('message', sender === 'user1' ? 'msg-left' : 'msg-right');
+      msgEl.setAttribute('data-id', id);
+      msgEl.setAttribute('role', 'article');
+      msgEl.setAttribute('aria-label', `${userNames[sender]} message`);
+
+      // Text content
+      if (text) {
+        const textNode = document.createElement('div');
+        textNode.textContent = text;
+        msgEl.appendChild(textNode);
+      }
+      // Media content
+      if (media) {
+        let mediaEl;
+        if(media.type.startsWith('image/')) {
+          mediaEl = document.createElement('img');
+          mediaEl.src = media.data;
+          mediaEl.alt = 'Attached image';
+          mediaEl.style.maxWidth = '200px';
+          mediaEl.style.borderRadius = '12px';
+          mediaEl.style.display = 'block';
+          mediaEl.style.marginTop = '6px';
+        } else if(media.type.startsWith('video/')) {
+          mediaEl = document.createElement('video');
+          mediaEl.src = media.data;
+          mediaEl.controls = true;
+          mediaEl.style.maxWidth = '200px';
+          mediaEl.style.borderRadius = '12px';
+          mediaEl.style.display = 'block';
+          mediaEl.style.marginTop = '6px';
+        } else if(media.type.startsWith('audio/')) {
+          mediaEl = document.createElement('audio');
+          mediaEl.src = media.data;
+          mediaEl.controls = true;
+          mediaEl.style.display = 'block';
+          mediaEl.style.marginTop = '6px';
+        }
+        if(mediaEl) msgEl.appendChild(mediaEl);
+      }
+
+      // Timestamp
+      const timeEl = document.createElement('span');
+      timeEl.classList.add('timestamp');
+      timeEl.textContent = formatTimestamp(timestamp);
+      msgEl.appendChild(timeEl);
+
+      return msgEl;
+    }
+
+    // Append message to chat container and scroll to bottom
+    function appendMessage(message) {
+      const el = createMessageElement(message);
+      chatContainer.appendChild(el);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Update toggle button aria-pressed and label
+    function updateToggleUserUI() {
+      toggleUserBtn.textContent = `Active User: ${userNames[activeUser]}`;
+      toggleUserBtn.setAttribute('aria-pressed', activeUser === 'user2');
+      inputField.focus();
+    }
+
+    // Handle toggle user
+    toggleUserBtn.addEventListener('click', () => {
+      activeUser = activeUser === 'user1' ? 'user2' : 'user1';
+      updateToggleUserUI();
+    });
+
+    // Enable/disable send button based on input or media exists
+    function updateSendButtonState() {
+      sendBtn.disabled = !(inputField.value.trim() || attachInput.files.length);
+      sendBtn.setAttribute('aria-disabled', sendBtn.disabled.toString());
+    }
+
+    inputField.addEventListener('input', updateSendButtonState);
+
+    // Show media preview if attached
+    attachInput.addEventListener('change', () => {
+      if(attachInput.files.length) {
+        const file = attachInput.files[0];
+        if(file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            mediaPreview.src = e.target.result;
+            mediaPreview.style.display = 'inline-block';
+          };
+          reader.readAsDataURL(file);
+        } else {
+          mediaPreview.style.display = 'none';
+          mediaPreview.src = '';
+        }
+      } else {
+        mediaPreview.style.display = 'none';
+        mediaPreview.src = '';
+      }
+      updateSendButtonState();
+    });
+
+    // Clear input and media
+    function clearInputs() {
+      inputField.value = '';
+      attachInput.value = '';
+      mediaPreview.src = '';
+      mediaPreview.style.display = 'none';
+      updateSendButtonState();
+    }
+
+    // Handle send message
+    sendBtn.addEventListener('click', () => {
+      const text = inputField.value.trim();
+      const file = attachInput.files[0];
+      if(!text && !file) return;
+
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const newMsg = {
+            id: Date.now().toString(),
+            sender: activeUser,
+            text: text || '',
+            media: {type: file.type, data: e.target.result},
+            timestamp: new Date(),
+          };
+          messages.push(newMsg);
+          appendMessage(newMsg);
+          clearInputs();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const newMsg = {
+          id: Date.now().toString(),
+          sender: activeUser,
+          text,
+          media: null,
+          timestamp: new Date(),
+        };
+        messages.push(newMsg);
+        appendMessage(newMsg);
+        clearInputs();
+      }
+    });
+
+    // Initial UI setup
+    updateToggleUserUI();
+    updateSendButtonState();
+
+  })();
+</script>
 </body>
 </html>
